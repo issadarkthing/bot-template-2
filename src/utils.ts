@@ -1,3 +1,4 @@
+import { CommandInteraction } from "discord.js";
 import { MersenneTwister19937, Random } from "random-js";
 import { isDeepStrictEqual } from "util"
 
@@ -16,6 +17,12 @@ export const RIGHTMOST_ARROW_BUTTON = "⏭️";
 export const REPEAT = "🔁";
 export const DIAMOND = "🔹";
 export const CROSSED_SWORD = "⚔️";
+
+export async function getMessage(i: CommandInteraction) {
+  const msg = await i.channel!.send("loading");
+  await msg.delete();
+  return msg;
+}
 
 export function bold(str: string | number) {
   return `**${str}**`;

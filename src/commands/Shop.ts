@@ -4,16 +4,17 @@ import {
   code, 
   toNList, 
   validateIndex, 
-  validateNumber, 
+  validateNumber,
+  getMessage, 
 } from "../utils";
 import { Armor } from "../structure/Armor";
 import { Command } from "@jiman24/slash-commandment";
 import { ButtonHandler } from "@jiman24/discordjs-button";
-import { stripIndents } from "common-tags";
 import { Item } from "../structure/Item";
 import { Weapon } from "../structure/Weapon";
 import { Pet } from "../structure/Pet";
 import { Skill } from "../structure/Skill";
+import { cap } from "@jiman24/discordjs-utils";
 
 interface ItemLike {
   name: string;
@@ -31,13 +32,14 @@ export default class extends Command {
       option
         .setName("type")
         .setDescription("shop type")
+        .setRequired(true)
         .addChoice("armor", "armor")
         .addChoice("weapon", "weapon")
         .addChoice("pet", "pet")
         .addChoice("skill", "skill")
     )
 
-    this.addNumberOption(option => 
+    this.addIntegerOption(option => 
       option
         .setName("index")
         .setDescription("item index")
@@ -75,7 +77,6 @@ export default class extends Command {
         throw new Error("invalid category");
       }
 
-      const msg = await i.channel!.send("executing");
 
       if (arg2) {
 
@@ -87,7 +88,10 @@ export default class extends Command {
         const selected = items[index];
 
         const info = selected.show();
-        const menu = new ButtonHandler(msg, info);
+        const msg = await getMessage(i);
+        const menu = new ButtonHandler(msg, info, i.user.id);
+
+        i.deferReply();
 
         menu.addButton("buy", () => {
           return selected.buy(msg);
@@ -96,6 +100,8 @@ export default class extends Command {
         menu.addCloseButton();
 
         await menu.run();
+
+        i.editReply("done");
 
         return;
 
@@ -107,29 +113,14 @@ export default class extends Command {
 
         const embed = new MessageEmbed()
           .setColor("RANDOM")
-          .setTitle(`${category} Shop`)
+          .setTitle(`${cap(category)} Shop`)
           .setDescription(itemList)
 
-        msg.channel.send({ embeds: [embed] });
+        i.reply({ embeds: [embed] });
 
         return;
       }
     }
-
-    const rpgList = stripIndents`
-      **Categories**
-      armor
-      weapon
-      pet
-      skill
-      `;
-
-      const shop = new MessageEmbed()
-      .setColor("RANDOM")
-      .setTitle("Shop")
-      .setDescription(rpgList);
-
-    i.reply({ embeds: [shop] });
 
   }
 }

@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@jiman24/discordjs-button': ^0.1.0
   '@jiman24/discordjs-rpg': ^2.3.6
+  '@jiman24/discordjs-utils': ^0.1.2
   '@jiman24/slash-commandment': ^0.0.5
   '@types/common-tags': ^1.8.1
   '@types/luxon': ^2.0.8
@@ -17,6 +18,7 @@ specifiers:
 dependencies:
   '@jiman24/discordjs-button': 0.1.0
   '@jiman24/discordjs-rpg': 2.3.6
+  '@jiman24/discordjs-utils': 0.1.2
   '@jiman24/slash-commandment': 0.0.5
   common-tags: 1.8.2
   discord.js: 13.6.0
@@ -99,6 +101,17 @@ packages:
       discord.js: 13.6.0
       dotenv: 10.0.0
       lodash.clonedeep: 4.5.0
+      random-js: 2.1.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+    dev: false
+
+  /@jiman24/discordjs-utils/0.1.2:
+    resolution: {integrity: sha512-NRCHbXdl1HLWPzIngoS2iY3m6fQRotIYoDG6nB28miqkAdfXd93xC/7Mm9x2ZI9BrA4KGnjDftcA62Zz2tbdFg==}
+    dependencies:
+      discord.js: 13.6.0
       random-js: 2.1.0
     transitivePeerDependencies:
       - bufferutil
