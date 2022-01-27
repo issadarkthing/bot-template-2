@@ -54,6 +54,7 @@ export default class extends Command {
         player.coins += monster.drop;
         player.win++;
 
+        i.reply("Battle ended");
         msg.channel.send(`${player.name} has earned ${bold(monster.drop)} ${currency}!`);
         msg.channel.send(`${player.name} has earned ${bold(monster.xpDrop)} xp!`);
 

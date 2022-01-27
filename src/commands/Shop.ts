@@ -15,6 +15,7 @@ import { Weapon } from "../structure/Weapon";
 import { Pet } from "../structure/Pet";
 import { Skill } from "../structure/Skill";
 import { cap } from "@jiman24/discordjs-utils";
+import { SelectMenu } from "../structure/SelectMenu";
 
 interface ItemLike {
   name: string;
@@ -59,68 +60,57 @@ export default class extends Command {
   async exec(i: CommandInteraction) {
 
     const arg1 = i.options.getString("type");
-    const arg2 = i.options.getInteger("index");
+    let items = [] as Item[];
 
-    if (arg1) {
-    
-      let items = [] as Item[] | null;
-
-      switch (arg1) {
-        case "armor": items = Armor.all; break;
-        case "weapon": items = Weapon.all; break;
-        case "pet": items = Pet.all; break;
-        case "skill": items = Skill.all; break;
-        default: items = null;
-      }
-
-      if (!items) {
-        throw new Error("invalid category");
-      }
-
-
-      if (arg2) {
-
-        const index = arg2 - 1;
-
-        validateNumber(index);
-        validateIndex(index, items);
-
-        const selected = items[index];
-
-        const info = selected.show();
-        const msg = await getMessage(i);
-        const menu = new ButtonHandler(msg, info, i.user.id);
-
-        i.deferReply();
-
-        menu.addButton("buy", () => {
-          return selected.buy(msg);
-        })
-
-        menu.addCloseButton();
-
-        await menu.run();
-
-        i.editReply("done");
-
-        return;
-
-      } else {
-
-        let [itemList] = this.toList(items);
-        const category = Object.getPrototypeOf(items[0].constructor).name.toLowerCase();
-
-
-        const embed = new MessageEmbed()
-          .setColor("RANDOM")
-          .setTitle(`${cap(category)} Shop`)
-          .setDescription(itemList)
-
-        i.reply({ embeds: [embed] });
-
-        return;
-      }
+    switch (arg1) {
+      case "armor": items = Armor.all; break;
+      case "weapon": items = Weapon.all; break;
+      case "pet": items = Pet.all; break;
+      case "skill": items = Skill.all; break;
     }
+
+
+    let [itemList] = this.toList(items);
+    const category = Object.getPrototypeOf(items[0].constructor).name.toLowerCase();
+    const shopName = `${cap(category)} Shop`;
+    const embed = new MessageEmbed()
+      .setColor("RANDOM")
+      .setTitle(shopName)
+      .setDescription(itemList)
+
+    i.reply(`Opening ${shopName}`);
+
+    const menu = new SelectMenu(i, embed, i.user.id);
+
+    for (const item of items) {
+      menu.selectMenu.addOptions({
+        label: item.name,
+        value: item.name,
+      })
+    }
+
+    menu.onSelect(async menuInteraction => {
+      const value = menuInteraction.values[0];
+      const item = items.find(x => x.name === value)!;
+
+      const info = item.show();
+      const msg = await getMessage(i);
+      const menu = new ButtonHandler(msg, info, i.user.id);
+
+      i.deferReply();
+
+      menu.addButton("buy", () => {
+        return item.buy(msg);
+      })
+
+      menu.addCloseButton();
+
+      await menu.run();
+
+      menuInteraction.reply(`You selected ${value}`);
+    });
+
+    await menu.run();
 
   }
 }
