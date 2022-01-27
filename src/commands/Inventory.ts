@@ -7,6 +7,9 @@ import { ButtonHandler } from "@jiman24/discordjs-button";
 import { Player } from "../structure/Player";
 import { DIAMOND, remove, toNList, validateNumber } from "../utils";
 import { Skill } from "../structure/Skill";
+import { SelectMenu } from "../structure/SelectMenu";
+import { Item } from "../structure/Item";
+import { ButtonMenu } from "../structure/ButtonMenu";
 
 
 export default class extends Command {
@@ -16,184 +19,172 @@ export default class extends Command {
   maxArmor = 4; // max equipped armor
   maxWeapon = 2; // max equipped weapon
 
-  constructor() {
-    super();
-
-    this.addNumberOption(option =>
-      option
-        .setName("index")
-        .setDescription("item index")
-    )
-  }
-
   async exec(i: CommandInteraction) {
 
-    try {
 
-      const player = Player.fromUser(i.user);
-      const arg1 = i.options.getInteger("index");
+    const player = Player.fromUser(i.user);
+    const inventoryList = toNList(
+      player.inventory.map(item => {
+        // show equipped item in the list with symbol so it is easier to
+        // overview what item is in equipped
+        const equippedName = `${DIAMOND} ${item.name}`;
 
-      if (arg1 !== null) {
-
-        const index = arg1 - 1;
-
-        validateNumber(index);
-
-        const item = player.inventory[index];
-
-        if (!item) {
-          i.reply("cannot find item");
-          return;
+        if (
+          player.equippedWeapons.some(x => x.id === item.id) ||
+          player.equippedArmors.some(x => x.id === item.id) ||
+          player.pet?.id === item.id ||
+          player.skill?.id === item.id
+        ) {
+          return equippedName;
         }
 
-        const msg = await i.channel!.send("executing");
-        const menu = new ButtonHandler(msg, item.show());
 
-        if (item instanceof Armor) {
+        return item.name;
+      })
+    );
 
-          if (player.equippedArmors.some(x => x.id === item.id)) {
-            
-            menu.addButton("unequip", () => {
+    let footer = "\n---\n";
 
-              player.equippedArmors = remove(item, player.equippedArmors);
-              player.save();
+    footer += `${DIAMOND}: equipped/active`;
 
-              msg.channel.send(`Successfully unequipped ${item.name}`);
-            })
+    const embed = new MessageEmbed()
+      .setColor("RANDOM")
+      .setTitle("Inventory")
+      .setDescription(inventoryList + footer);
 
-          } else {
+    await i.reply("Opening inventory");
 
-            menu.addButton("equip", () => {
+    const menu = new SelectMenu(i, embed);
 
-              if (player.equippedArmors.length >= this.maxArmor) {
-                throw new Error(`you cannot equip more than ${this.maxArmor} armor`);
-              }
+    for (const item of player.inventory) {
+      menu.selectMenu.addOptions({
+        label: item.name,
+        value: item.id,
+      })
+    }
 
-              player.equippedArmors.push(item);
-              player.save();
+    let item!: Item;
 
-              msg.channel.send(`Successfully equipped ${item.name}`);
+    menu.onSelect(async menuInteraction => {
+      item = player.inventory.find(x => x.id === menuInteraction.values[0])!;
 
-            })
+      await menuInteraction.reply(`You've selected ${item.name}`);
+      await menuInteraction.deleteReply();
+    })
+
+    await menu.run();
+
+    const button = new ButtonMenu(i, item.show());
+
+    if (item instanceof Armor) {
+
+      if (player.equippedArmors.some(x => x.id === item.id)) {
+
+        button.addButton("unequip", (i) => {
+
+          player.equippedArmors = remove(item as Armor, player.equippedArmors);
+          player.save();
+
+          i.reply(`Successfully unequipped ${item.name}`);
+        })
+
+      } else {
+
+        button.addButton("equip", (i) => {
+
+          if (player.equippedArmors.length >= this.maxArmor) {
+            throw new Error(`you cannot equip more than ${this.maxArmor} armor`);
           }
 
-        } else if (item instanceof Weapon) {
+          player.equippedArmors.push(item as Armor);
+          player.save();
 
-          if (player.equippedWeapons.some(x => x.id === item.id)) {
-            
-            menu.addButton("unequip", () => {
+          i.reply(`Successfully equipped ${item.name}`);
 
-              player.equippedWeapons = remove(item, player.equippedWeapons);
-              player.save();
-
-              msg.channel.send(`Successfully unequipped ${item.name}`);
-            })
-
-          } else {
-
-            menu.addButton("equip", () => {
-
-              if (player.equippedWeapons.length >= this.maxWeapon) {
-                throw new Error(`you cannot equip more than ${this.maxWeapon} weapon`);
-              }
-
-              player.equippedWeapons.push(item);
-              player.save();
-
-              msg.channel.send(`Successfully equipped ${item.name}`);
-
-            })
-          }
-
-        } else if (item instanceof Pet) {
-
-          if (player.pet?.id === item.id) {
-
-            menu.addButton("deactivate", () => {
-
-              player.pet = undefined;
-              player.save();
-
-              msg.channel.send(`Successfully deactive ${item.name}`);
-            })
-
-          } else {
-
-            menu.addButton("activate", () => {
-
-              item.setOwner(player);
-              player.save();
-
-              msg.channel.send(`Successfully make ${item.name} as active pet`);
-
-            })
-          }
-
-        } else if (item instanceof Skill) {
-
-          if (player.skill?.id === item.id) {
-            
-            menu.addButton("deactivate", () => {
-
-              player.skill = undefined;
-              player.save();
-
-              msg.channel.send(`Successfully deactivated ${item.name}`);
-            })
-
-          } else {
-
-            menu.addButton("activate", () => {
-
-              player.skill = item;
-              player.save();
-
-              msg.channel.send(`Successfully activated ${item.name}`);
-
-            })
-          }
-
-        }
-
-        menu.addCloseButton();
-        await menu.run();
-
-        return;
+        })
       }
 
-      const inventoryList = toNList(
-        player.inventory.map(item => {
-          // show equipped item in the list with symbol so it is easier to
-          // overview what item is in equipped
-          const equippedName = `${DIAMOND} ${item.name}`;
-          
-          if (
-            player.equippedWeapons.some(x => x.id === item.id) ||
-            player.equippedArmors.some(x => x.id === item.id) ||
-            player.pet?.id === item.id ||
-            player.skill?.id === item.id
-          ) {
-            return equippedName;
+    } else if (item instanceof Weapon) {
+
+      if (player.equippedWeapons.some(x => x.id === item.id)) {
+
+        button.addButton("unequip", (i) => {
+
+          player.equippedWeapons = remove(item as Weapon, player.equippedWeapons);
+          player.save();
+
+          i.reply(`Successfully unequipped ${item.name}`);
+        })
+
+      } else {
+
+        button.addButton("equip", (i) => {
+
+          if (player.equippedWeapons.length >= this.maxWeapon) {
+            throw new Error(`you cannot equip more than ${this.maxWeapon} weapon`);
           }
 
+          player.equippedWeapons.push(item as Weapon);
+          player.save();
 
-          return item.name;
+          i.reply(`Successfully equipped ${item.name}`);
+
         })
-      );
+      }
 
-      let footer = "\n---\n";
+    } else if (item instanceof Pet) {
 
-      footer += `${DIAMOND}: equipped/active`;
+      if (player.pet?.id === item.id) {
 
-      const embed = new MessageEmbed()
-        .setColor("RANDOM")
-        .setTitle("Inventory")
-        .setDescription(inventoryList + footer);
+        button.addButton("deactivate", (i) => {
 
-      i.reply({ embeds: [embed] });
+          player.pet = undefined;
+          player.save();
 
-    } catch (err) {
-      i.reply((err as Error).message);
+          i.reply(`Successfully deactive ${item.name}`);
+        })
+
+      } else {
+
+        button.addButton("activate", (i) => {
+
+          (item as Pet).setOwner(player);
+          player.save();
+
+          i.reply(`Successfully make ${item.name} as active pet`);
+
+        })
+      }
+
+    } else if (item instanceof Skill) {
+
+      if (player.skill?.id === item.id) {
+
+        button.addButton("deactivate", (i) => {
+
+          player.skill = undefined;
+          player.save();
+
+          i.reply(`Successfully deactivated ${item.name}`);
+        })
+
+      } else {
+
+        button.addButton("activate", (i) => {
+
+          player.skill = item as Skill;
+          player.save();
+
+          i.reply(`Successfully activated ${item.name}`);
+
+        })
+      }
+
     }
+
+    button.addCloseButton();
+
+    await button.run()
+
   }
 }
