@@ -22,7 +22,7 @@ type ButtonCallback = Button["callback"];
 const GLOBAL_BUTTONS: Button[] = [];
 
 export class ButtonMenu {
-  private i: CommandInteraction;
+  protected i: CommandInteraction;
   private userID: string;
   private embed: MessageEmbed;
   private buttons: Button[] = [];
@@ -244,7 +244,7 @@ export class ButtonMenu {
           GLOBAL_BUTTONS.splice(index, 1);
         }
 
-        menu.delete();
+        menu.delete().catch(() => {});
 
         Promise.allSettled(promises)
           .then(() => resolve())
