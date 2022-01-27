@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from "discord.js";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { 
   currency, 
   code, 
@@ -7,7 +7,7 @@ import {
   validateNumber, 
 } from "../utils";
 import { Armor } from "../structure/Armor";
-import { Command } from "@jiman24/commandment";
+import { Command } from "@jiman24/slash-commandment";
 import { ButtonHandler } from "@jiman24/discordjs-button";
 import { stripIndents } from "common-tags";
 import { Item } from "../structure/Item";
@@ -24,6 +24,26 @@ export default class extends Command {
   name = "shop";
   description = "buy in-game items";
 
+  constructor() {
+    super();
+
+    this.addStringOption(option => 
+      option
+        .setName("type")
+        .setDescription("shop type")
+        .addChoice("armor", "armor")
+        .addChoice("weapon", "weapon")
+        .addChoice("pet", "pet")
+        .addChoice("skill", "skill")
+    )
+
+    this.addNumberOption(option => 
+      option
+        .setName("index")
+        .setDescription("item index")
+    )
+  }
+
   private toList(items: ItemLike[], start = 1) {
     const list = toNList(
       items.map(x => `${x.name} ${code(x.price)} ${currency}`),
@@ -34,10 +54,10 @@ export default class extends Command {
     return [list, lastIndex] as const;
   }
 
-  async exec(msg: Message, args: string[]) {
+  async exec(i: CommandInteraction) {
 
-    const [arg1, arg2] = args;
-    const prefix = this.commandManager.prefix;
+    const arg1 = i.options.getString("type");
+    const arg2 = i.options.getInteger("index");
 
     if (arg1) {
     
@@ -55,9 +75,11 @@ export default class extends Command {
         throw new Error("invalid category");
       }
 
+      const msg = await i.channel!.send("executing");
+
       if (arg2) {
 
-        const index = parseInt(arg2) - 1;
+        const index = arg2 - 1;
 
         validateNumber(index);
         validateIndex(index, items);
@@ -76,13 +98,12 @@ export default class extends Command {
         await menu.run();
 
         return;
+
       } else {
 
         let [itemList] = this.toList(items);
         const category = Object.getPrototypeOf(items[0].constructor).name.toLowerCase();
 
-        itemList += "\n----\n";
-        itemList += `To select an item on index 1, use \`${prefix}${this.name} ${category} 1\``;
 
         const embed = new MessageEmbed()
           .setColor("RANDOM")
@@ -101,8 +122,6 @@ export default class extends Command {
       weapon
       pet
       skill
-      ------
-      To open armor shop use command \`${prefix}${this.name} armor\`
       `;
 
       const shop = new MessageEmbed()
@@ -110,7 +129,7 @@ export default class extends Command {
       .setTitle("Shop")
       .setDescription(rpgList);
 
-    msg.channel.send({ embeds: [shop] });
+    i.reply({ embeds: [shop] });
 
   }
 }

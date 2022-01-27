@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 import { bold, currency, validateAmount, validateNumber } from "../utils";
 import { Battle } from "@jiman24/discordjs-rpg";
@@ -12,27 +12,38 @@ export default class extends Command {
   maxCount = 5;
   cooldownTime = 1; // hours
 
-  async exec(msg: Message, args: string[]) {
+  constructor() {
+    super();
 
-    const player = Player.fromUser(msg.author);
+    this.addIntegerOption(option => 
+      option
+        .setName("bet")
+        .setDescription("amount to bet")
+        .setMinValue(0)
+        .setRequired(true)
+    );
 
-    const mentionedUser = msg.mentions.users.first();
+    this.addUserOption(option =>
+      option
+        .setName("user")
+        .setDescription("user you want to challenge")
+        .setRequired(true)
+    )
 
-    if (!mentionedUser) {
-      throw new Error(`You need to mention a user`);
-    }
+  }
 
-    const arg1 = args[1];
-    const amount = parseInt(arg1);
+  async exec(i: CommandInteraction) {
 
-    if (!arg1) {
-      throw new Error("please specify an amount to bet");
-    }
+    const player = Player.fromUser(i.user);
+    const amount = i.options.getInteger("bet")!;
+    const mentionedUser = i.options.getUser("user")!;
 
     validateNumber(amount);
     validateAmount(amount, player.coins);
 
     let accept = false;
+
+    const msg = await i.channel!.send("executing");
 
     const duelConfirmation = new ButtonHandler(
       msg, 
@@ -68,7 +79,7 @@ export default class extends Command {
     winner.save();
     loser.save();
 
-    msg.channel.send(`${winner.name} wins over ${opponent.name}!`);
+    i.reply(`${winner.name} wins over ${opponent.name}!`);
     msg.channel.send(`${winner.name} earns ${bold(amount * 2)} ${currency}`);
     msg.channel.send(`${loser.name} loses ${bold(amount)} ${currency}`);
 

@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { ButtonHandler } from "@jiman24/discordjs-button";
 import { Player } from "../structure/Player";
 import { Battle } from "@jiman24/discordjs-rpg";
@@ -13,7 +13,7 @@ export default class extends Command {
   maxPlayers = 5;
   fee = 10;
 
-  async exec(msg: Message) {
+  async exec(i: CommandInteraction) {
 
     const players = [] as Player[];
 
@@ -24,6 +24,8 @@ export default class extends Command {
         oneLine`Battle Royale event has started. Waiting for ${this.maxPlayers}
         players. Battle fee is ${this.fee} ${currency}`
       );
+
+    const msg = await i.channel!.send("Battle");
 
     const menu = new ButtonHandler(msg, embed)
       .setMultiUser(this.maxPlayers);

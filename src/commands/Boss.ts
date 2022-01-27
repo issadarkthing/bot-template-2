@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Boss } from "../structure/Boss";
 import { Player } from "../structure/Player";
 import { 
@@ -17,16 +17,27 @@ export default class extends Command {
   name = "boss";
   description = "fight boss";
 
-  async exec(msg: Message, args: string[]) {
+  constructor() {
+    super();
 
-    const player = Player.fromUser(msg.author);
+    this.addIntegerOption(option =>
+      option
+        .setName("index")
+        .setDescription("boss index")
+    )
+  }
+
+  async exec(i: CommandInteraction) {
+
+    const player = Player.fromUser(i.user);
     const boss = Boss.all;
+      
+    const msg = await i.channel!.send("executing");
     
-    const [arg1] = args;
+    const index = i.options.getInteger("index");
     
-    if (arg1) {
+    if (index) {
 
-      const index = parseInt(arg1) - 1;
       validateNumber(index)
       validateIndex(index, boss);
 
@@ -71,6 +82,6 @@ export default class extends Command {
       .setTitle("Boss")
       .setDescription(bossList)
 
-    msg.channel.send({ embeds: [embed] });
+    i.reply({ embeds: [embed] });
   }
 }

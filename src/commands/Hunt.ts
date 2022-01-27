@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, Message, MessageEmbed } from "discord.js";
 import { Player } from "../structure/Player";
 import { Battle } from "@jiman24/discordjs-rpg";
 import { Monster } from "../structure/Monster";
@@ -34,9 +34,10 @@ export default class extends Command {
   description = "start hunting";
   block = true;
 
-  async exec(msg: Message) {
+  async exec(i: CommandInteraction) {
 
-    const player = Player.fromUser(msg.author);
+    const msg = await i.channel!.send("executing");
+    const player = Player.fromUser(i.user);
     const search = new SearchMonster(msg, "", player);
 
     await search.search(async monster => {
@@ -62,8 +63,6 @@ export default class extends Command {
       } 
 
       player.save();
-      this.release(player.id);
-
     })
 
   }

@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Armor } from "../structure/Armor";
 import { Weapon } from "../structure/Weapon";
 import { Pet } from "../structure/Pet";
@@ -16,25 +16,37 @@ export default class extends Command {
   maxArmor = 4; // max equipped armor
   maxWeapon = 2; // max equipped weapon
 
-  async exec(msg: Message, args: string[]) {
+  constructor() {
+    super();
+
+    this.addNumberOption(option =>
+      option
+        .setName("index")
+        .setDescription("item index")
+    )
+  }
+
+  async exec(i: CommandInteraction) {
 
     try {
 
-      const player = Player.fromUser(msg.author);
-      const [arg1] = args;
+      const player = Player.fromUser(i.user);
+      const arg1 = i.options.getInteger("index");
 
-      if (arg1) {
+      if (arg1 !== null) {
 
-        const index = parseInt(arg1) - 1;
+        const index = arg1 - 1;
 
         validateNumber(index);
 
         const item = player.inventory[index];
 
         if (!item) {
-          throw new Error("cannot find item");
+          i.reply("cannot find item");
+          return;
         }
 
+        const msg = await i.channel!.send("executing");
         const menu = new ButtonHandler(msg, item.show());
 
         if (item instanceof Armor) {
@@ -178,10 +190,10 @@ export default class extends Command {
         .setTitle("Inventory")
         .setDescription(inventoryList + footer);
 
-      msg.channel.send({ embeds: [embed] });
+      i.reply({ embeds: [embed] });
 
     } catch (err) {
-      msg.channel.send((err as Error).message);
+      i.reply((err as Error).message);
     }
   }
 }

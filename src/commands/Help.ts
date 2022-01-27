@@ -1,14 +1,14 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
-import { client } from "../index";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, MessageEmbed } from "discord.js";
+import { commandManager } from "../index";
 
 export default class Help extends Command {
   name = "help";
   aliases = ["h"];
   description = "show all commands and it's description";
 
-  async exec(msg: Message) {
-    const commands = client.commandManager.commands.values();
+  async exec(i: CommandInteraction) {
+    const commands = commandManager.commands.values();
 
     let helpText = "";
     const done = new Set<string>();
@@ -34,6 +34,6 @@ export default class Help extends Command {
       .setTitle("Help")
       .setDescription(helpText)
 
-    msg.channel.send({ embeds: [embed] });
+    i.reply({ embeds: [embed] });
   }
 }

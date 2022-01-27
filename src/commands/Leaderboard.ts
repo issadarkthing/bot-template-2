@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message, MessageEmbed } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { client } from "../index";
 import { bold, currency } from "../utils";
 
@@ -8,7 +8,7 @@ export default class extends Command {
   aliases = ["l"];
   description = "show leaderboard of rich players";
 
-  exec(msg: Message) {
+  async exec(i: CommandInteraction) {
 
     const player = client.players.array()
       .sort((a, b) => b.coins - a.coins)
@@ -21,7 +21,7 @@ export default class extends Command {
       .setTitle("Leaderboard")
       .setDescription(bold(`Name | ${currency}\n`) + player);
 
-    msg.channel.send({ embeds: [embed] });
+    i.reply({ embeds: [embed] });
   }
 }
 

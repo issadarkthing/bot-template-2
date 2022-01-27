@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 import { random, validateAmount, validateNumber } from "../utils";
 
@@ -8,6 +8,18 @@ export default class extends Command {
   description = "slot machine game";
   symbols = ["🔵", "🔴", "⚪"];
   throttle = 60 * 1000;
+
+  constructor() {
+    super();
+
+    this.addIntegerOption(option => 
+      option
+        .setName("bet")
+        .setDescription("amount to bet")
+        .setMinValue(1)
+        .setRequired(true)
+    )
+  }
 
   private allEqual(arr: string[]) {
     return arr.every(x => x === arr[0]);
@@ -24,15 +36,11 @@ export default class extends Command {
     ];
   }
 
-  async exec(msg: Message, args: string[]) {
+  async exec(i: CommandInteraction) {
 
-    const arg1 = args[0];
-    const amount = parseInt(arg1);
-    const player = Player.fromUser(msg.author);
-
-    if (!arg1) {
-      throw new Error("please specify bet amount");
-    } 
+    const amount = i.options.getInteger("bet")!;
+    const player = Player.fromUser(i.user);
+    const msg = await i.channel!.send("executing");
 
     validateNumber(amount);
     validateAmount(amount, player.coins);
@@ -70,7 +78,7 @@ export default class extends Command {
       .map(x => "**|** " + x.join("") + " **|**")
       .join("\n");
 
-    msg.channel.send(result);
+    i.reply(result);
 
     player.coins -= amount;
 

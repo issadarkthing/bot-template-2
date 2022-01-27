@@ -1,5 +1,5 @@
-import { Command } from "@jiman24/commandment";
-import { Message } from "discord.js";
+import { Command } from "@jiman24/slash-commandment";
+import { CommandInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 
 export default class extends Command {
@@ -7,10 +7,8 @@ export default class extends Command {
   description = "show profile";
   aliases = ["p"];
 
-  async exec(msg: Message) {
-
-    const player = Player.fromUser(msg.author);
-
-    msg.channel.send({ embeds: [player.show()] });
+  async exec(i: CommandInteraction) {
+    const player = Player.fromUser(i.user);
+    i.reply({ embeds: [player.show()] });
   }
 }
