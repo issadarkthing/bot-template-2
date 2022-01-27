@@ -3,19 +3,17 @@ import {
   currency, 
   code, 
   toNList, 
-  validateIndex, 
-  validateNumber,
   getMessage, 
 } from "../utils";
 import { Armor } from "../structure/Armor";
 import { Command } from "@jiman24/slash-commandment";
-import { ButtonHandler } from "@jiman24/discordjs-button";
 import { Item } from "../structure/Item";
 import { Weapon } from "../structure/Weapon";
 import { Pet } from "../structure/Pet";
 import { Skill } from "../structure/Skill";
 import { cap } from "@jiman24/discordjs-utils";
 import { SelectMenu } from "../structure/SelectMenu";
+import { ButtonMenu } from "../structure/ButtonMenu";
 
 interface ItemLike {
   name: string;
@@ -38,12 +36,6 @@ export default class extends Command {
         .addChoice("weapon", "weapon")
         .addChoice("pet", "pet")
         .addChoice("skill", "skill")
-    )
-
-    this.addIntegerOption(option => 
-      option
-        .setName("index")
-        .setDescription("item index")
     )
   }
 
@@ -78,9 +70,7 @@ export default class extends Command {
       .setTitle(shopName)
       .setDescription(itemList)
 
-    i.reply(`Opening ${shopName}`);
-
-    const menu = new SelectMenu(i, embed, i.user.id);
+    const menu = new SelectMenu(i, embed);
 
     for (const item of items) {
       menu.selectMenu.addOptions({
@@ -89,28 +79,30 @@ export default class extends Command {
       })
     }
 
+    await i.reply("Opening shop");
+
+    let value: string;
+
     menu.onSelect(async menuInteraction => {
-      const value = menuInteraction.values[0];
-      const item = items.find(x => x.name === value)!;
+      value = menuInteraction.values[0];
 
-      const info = item.show();
-      const msg = await getMessage(i);
-      const menu = new ButtonHandler(msg, info, i.user.id);
-
-      i.deferReply();
-
-      menu.addButton("buy", () => {
-        return item.buy(msg);
-      })
-
-      menu.addCloseButton();
-
-      await menu.run();
-
-      menuInteraction.reply(`You selected ${value}`);
+      await menuInteraction.reply(`You've selected ${value}`);
+      await menuInteraction.deleteReply();
     });
 
     await menu.run();
+
+    const item = items.find(x => x.name === value)!;
+    const info = item.show();
+    const button = new ButtonMenu(i, info);
+
+    button.addButton("buy", async btn => {
+      await item.buy(btn);
+    })
+
+    button.addCloseButton();
+
+    await button.run();
 
   }
 }

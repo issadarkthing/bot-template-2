@@ -1,5 +1,5 @@
-import { Message } from "discord.js";
 import { Weapon as BaseWeapon } from "@jiman24/discordjs-rpg";
+import { ButtonInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 
 export abstract class Weapon extends BaseWeapon {
@@ -14,12 +14,12 @@ export abstract class Weapon extends BaseWeapon {
     ];
   }
 
-  async buy(msg: Message) {
+  async buy(i: ButtonInteraction) {
 
-    const player = Player.fromUser(msg.author);
+    const player = Player.fromUser(i.user);
 
     if (player.coins < this.price) {
-      msg.channel.send("Insufficient amount");
+      await i.reply("Insufficient amount");
       return;
     }
 
@@ -27,7 +27,7 @@ export abstract class Weapon extends BaseWeapon {
       player.inventory.some(x => x.id === this.id) ||
       player.equippedWeapons.some(x => x.id === this.id)
     ) {
-      msg.channel.send("You already own this item");
+      await i.reply("You already own this item");
       return;
     }
 
@@ -35,7 +35,7 @@ export abstract class Weapon extends BaseWeapon {
     player.inventory.push(this);
 
     player.save();
-    msg.channel.send(`Successfully bought **${this.name}**`);
+    await i.reply(`Successfully bought **${this.name}**`);
   }
 }
 

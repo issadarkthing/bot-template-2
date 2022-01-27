@@ -1,5 +1,5 @@
-import { Message } from "discord.js";
 import { Pet as BasePet } from "@jiman24/discordjs-rpg";
+import { ButtonInteraction } from "discord.js";
 import { Player } from "./Player";
 
 export abstract class Pet extends BasePet {
@@ -14,17 +14,17 @@ export abstract class Pet extends BasePet {
     ];
   }
 
-  async buy(msg: Message) {
+  async buy(i: ButtonInteraction) {
 
-    const player = Player.fromUser(msg.author);
+    const player = Player.fromUser(i.user);
 
     if (player.coins < this.price) {
-      msg.channel.send("Insufficient amount");
+      await i.reply("Insufficient amount");
       return;
     }
 
     if (player.inventory.some(x => x.id === this.id)) {
-      msg.channel.send("You already own this item");
+      await i.reply("You already own this item");
       return;
     }
 
@@ -32,7 +32,7 @@ export abstract class Pet extends BasePet {
     player.inventory.push(this);
 
     player.save();
-    msg.channel.send(`Successfully bought **${this.name}**!`);
+    await i.reply(`Successfully bought **${this.name}**!`);
   }
 }
 

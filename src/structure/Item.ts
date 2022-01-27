@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from "discord.js";
+import { ButtonInteraction, MessageEmbed } from "discord.js";
 import { Armor } from "./Armor";
 import { Weapon } from "./Weapon";
 import { Pet } from "./Pet";
@@ -9,7 +9,7 @@ export abstract class Item {
   abstract id: string;
   abstract price: number;
   abstract show(): MessageEmbed;
-  abstract buy(msg: Message): void;
+  abstract buy(i: ButtonInteraction): Promise<void>;
   static get all() {
     return [
       ...Armor.all,

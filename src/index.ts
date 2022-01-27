@@ -25,7 +25,7 @@ export let commandManager: CommandManager;
 client.on("ready", () => { 
   commandManager = new CommandManager({
     client,
-    devGuildID: "899466085735223337",
+    devGuildID: "916935586160472087",
   })
 
   commandManager.verbose = true;

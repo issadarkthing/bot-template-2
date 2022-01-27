@@ -1,6 +1,7 @@
 import { 
   CommandInteraction, 
   Interaction, 
+  Message, 
   MessageActionRow, 
   MessageEmbed, 
   MessageSelectMenu,
@@ -10,11 +11,11 @@ import {
 type CallBack = (i: SelectMenuInteraction) => void | Promise<void>;
 
 export class SelectMenu {
-  i: CommandInteraction;
-  embed: MessageEmbed;
+  private i: CommandInteraction;
+  private embed: MessageEmbed;
+  private userID: string;
+  private callBack?: CallBack;
   selectMenu: MessageSelectMenu;
-  userID: string;
-  callBack?: CallBack;
 
   constructor(i: CommandInteraction, embed: MessageEmbed | string, userID?: string) {
     this.i = i;
@@ -44,8 +45,8 @@ export class SelectMenu {
     const row = new MessageActionRow()
       .addComponents(this.selectMenu);
 
-    const msg = await this.i.channel!
-      .send({ embeds: [this.embed], components: [row] });
+    const msg = await this.i
+      .editReply({ embeds: [this.embed], components: [row] }) as Message;
 
     return new Promise<void>((resolve) => {
         const filter = (i: Interaction) =>
@@ -57,9 +58,10 @@ export class SelectMenu {
         });
 
         collector.on("collect", async (collected: SelectMenuInteraction) => {
-          this.callBack && this.callBack(collected);
-          await msg.delete();
-          resolve();
+          if (this.callBack) {
+            await this.callBack(collected);
+            resolve();
+          }
         })
     })
   }

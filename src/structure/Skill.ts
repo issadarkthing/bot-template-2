@@ -1,5 +1,5 @@
 import { Fighter, Skill as BaseSkill } from "@jiman24/discordjs-rpg";
-import { Message, MessageEmbed } from "discord.js";
+import { ButtonInteraction, MessageEmbed } from "discord.js";
 import { oneLine } from "common-tags";
 import { formatPercent, code } from "../utils";
 import { Player } from "./Player";
@@ -15,12 +15,12 @@ export abstract class Skill extends BaseSkill {
     ];
   }
 
-  async buy(msg: Message) {
+  async buy(i: ButtonInteraction) {
 
-    const player = Player.fromUser(msg.author);
+    const player = Player.fromUser(i.user);
 
     if (player.coins < this.price) {
-      msg.channel.send("Insufficient amount");
+      await i.reply("Insufficient amount");
       return;
     }
 
@@ -28,7 +28,7 @@ export abstract class Skill extends BaseSkill {
       player.inventory.some(x => x.id === this.id) ||
       player.skill?.id === this.id
     ) {
-      msg.channel.send("You already own this skill");
+      await i.reply("You already own this skill");
       return;
     }
 
@@ -36,7 +36,7 @@ export abstract class Skill extends BaseSkill {
     player.inventory.push(this);
 
     player.save();
-    msg.channel.send(`Successfully bought **${this.name}**`);
+    await i.reply(`Successfully bought **${this.name}**`);
   }
 }
 
