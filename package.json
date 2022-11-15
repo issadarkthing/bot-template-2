@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "server": "nodemon dist/server/server.js",
     "dev": "nodemon -r source-map-support/register dist/index.js",
     "test": "NODE_ENV=test mocha --require ts-node/register 'src/server/tests/**/*.ts' --exit",
     "watch": "tsc -w"
