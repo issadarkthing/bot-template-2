@@ -10,6 +10,11 @@ export abstract class Item {
   abstract price: number;
   abstract show(): EmbedBuilder;
   abstract buy(i: CommandInteraction): Promise<void>;
+
+  static get(id: string) {
+    return Item.all.find(x => x.id === id);
+  }
+
   static get all() {
     return [
       ...Armor.all,
