@@ -1,7 +1,6 @@
 {
   "name": "RPG-bot",
   "version": "0.0.1",
-  "description": "sci-fi based rpg bot",
   "main": "dist/index.js",
   "author": "issadarkthing",
   "license": "MIT",
@@ -11,6 +10,10 @@
     "dev": "nodemon -r source-map-support/register dist/index.js",
     "test": "NODE_ENV=test mocha --require ts-node/register 'src/server/tests/**/*.ts' --exit",
     "watch": "tsc -w"
+  },
+  "engines": {
+    "npm": ">=8.0.0 <9.0.0",
+    "node": ">=17.0.0 <18.0.0"
   },
   "dependencies": {
     "@jiman24/discordjs-button": "^2.2.0",
