@@ -7,17 +7,10 @@ config();
 
 export const client = new Client({ 
   intents: [
-    "GUILDS", 
-    "GUILD_MESSAGES",
-    "DIRECT_MESSAGES",
-    "GUILD_MESSAGE_REACTIONS",
-    "GUILD_MEMBERS",
+    "GuildMessages",
+    "Guilds",
+    "GuildMembers",
   ],
-  partials: [
-    "CHANNEL",
-    "GUILD_MEMBER",
-    "REACTION",
-  ]
 });
 
 export let commandManager: CommandManager; 
@@ -25,7 +18,7 @@ export let commandManager: CommandManager;
 client.on("ready", () => { 
   commandManager = new CommandManager({
     client,
-    devGuildID: "916935586160472087",
+    devGuildID: "899466085735223337",
   })
 
   commandManager.verbose = true;

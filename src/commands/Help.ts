@@ -1,5 +1,5 @@
 import { Command } from "@jiman24/slash-commandment";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { commandManager } from "../index";
 
 export default class Help extends Command {
@@ -29,8 +29,8 @@ export default class Help extends Command {
 
     }
 
-    const embed = new MessageEmbed()
-      .setColor("RANDOM")
+    const embed = new EmbedBuilder()
+      .setColor("Random")
       .setTitle("Help")
       .setDescription(helpText)
 

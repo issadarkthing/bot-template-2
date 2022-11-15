@@ -1,9 +1,8 @@
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { 
   currency, 
   code, 
   toNList, 
-  getMessage, 
 } from "../utils";
 import { Armor } from "../structure/Armor";
 import { Command } from "@jiman24/slash-commandment";
@@ -13,7 +12,7 @@ import { Pet } from "../structure/Pet";
 import { Skill } from "../structure/Skill";
 import { cap } from "@jiman24/discordjs-utils";
 import { SelectMenu } from "../structure/SelectMenu";
-import { ButtonMenu } from "../structure/ButtonMenu";
+import { ButtonHandler } from "@jiman24/discordjs-button";
 
 interface ItemLike {
   name: string;
@@ -32,10 +31,12 @@ export default class extends Command {
         .setName("type")
         .setDescription("shop type")
         .setRequired(true)
-        .addChoice("armor", "armor")
-        .addChoice("weapon", "weapon")
-        .addChoice("pet", "pet")
-        .addChoice("skill", "skill")
+        .addChoices(
+          { name: "armor", value: "armor" },
+          { name: "weapon", value: "weapon" },
+          { name: "pet", value: "pet" },
+          { name: "skill", value: "skill" },
+        )
     )
   }
 
@@ -51,7 +52,7 @@ export default class extends Command {
 
   async exec(i: CommandInteraction) {
 
-    const arg1 = i.options.getString("type");
+    const arg1 = i.options.get("type", true)?.value as string;
     let items = [] as Item[];
 
     switch (arg1) {
@@ -65,8 +66,8 @@ export default class extends Command {
     let [itemList] = this.toList(items);
     const category = Object.getPrototypeOf(items[0].constructor).name.toLowerCase();
     const shopName = `${cap(category)} Shop`;
-    const embed = new MessageEmbed()
-      .setColor("RANDOM")
+    const embed = new EmbedBuilder()
+      .setColor("Random")
       .setTitle(shopName)
       .setDescription(itemList)
 
@@ -94,15 +95,22 @@ export default class extends Command {
 
     const item = items.find(x => x.name === value)!;
     const info = item.show();
-    const button = new ButtonMenu(i, info);
+    const button = new ButtonHandler(i, info);
 
-    button.addButton("buy", async btn => {
-      await item.buy(btn);
+    let isBuy = false;
+
+    button.addButton("buy", () => {
+      isBuy = true;
     })
 
     button.addCloseButton();
 
     await button.run();
 
+    if (!isBuy) {
+      return;
+    }
+
+    await item.buy(i);
   }
 }

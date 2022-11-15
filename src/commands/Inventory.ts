@@ -1,15 +1,14 @@
 import { Command } from "@jiman24/slash-commandment";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { Armor } from "../structure/Armor";
 import { Weapon } from "../structure/Weapon";
 import { Pet } from "../structure/Pet";
 import { ButtonHandler } from "@jiman24/discordjs-button";
 import { Player } from "../structure/Player";
-import { DIAMOND, remove, toNList, validateNumber } from "../utils";
+import { DIAMOND, remove, toNList } from "../utils";
 import { Skill } from "../structure/Skill";
 import { SelectMenu } from "../structure/SelectMenu";
 import { Item } from "../structure/Item";
-import { ButtonMenu } from "../structure/ButtonMenu";
 
 
 export default class extends Command {
@@ -47,13 +46,14 @@ export default class extends Command {
 
     footer += `${DIAMOND}: equipped/active`;
 
-    const embed = new MessageEmbed()
-      .setColor("RANDOM")
+    const embed = new EmbedBuilder()
+      .setColor("Random")
       .setTitle("Inventory")
       .setDescription(inventoryList + footer);
 
     await i.reply("Opening inventory");
 
+    const channel = i.channel!;
     const menu = new SelectMenu(i, embed);
 
     for (const item of player.inventory) {
@@ -74,23 +74,23 @@ export default class extends Command {
 
     await menu.run();
 
-    const button = new ButtonMenu(i, item.show());
+    const button = new ButtonHandler(i, item.show());
 
     if (item instanceof Armor) {
 
       if (player.equippedArmors.some(x => x.id === item.id)) {
 
-        button.addButton("unequip", (i) => {
+        button.addButton("unequip", () => {
 
           player.equippedArmors = remove(item as Armor, player.equippedArmors);
           player.save();
 
-          i.reply(`Successfully unequipped ${item.name}`);
+          channel.send(`Successfully unequipped ${item.name}`);
         })
 
       } else {
 
-        button.addButton("equip", (i) => {
+        button.addButton("equip", () => {
 
           if (player.equippedArmors.length >= this.maxArmor) {
             throw new Error(`you cannot equip more than ${this.maxArmor} armor`);
@@ -99,8 +99,7 @@ export default class extends Command {
           player.equippedArmors.push(item as Armor);
           player.save();
 
-          i.reply(`Successfully equipped ${item.name}`);
-
+          channel.send(`Successfully equipped ${item.name}`);
         })
       }
 
@@ -108,17 +107,17 @@ export default class extends Command {
 
       if (player.equippedWeapons.some(x => x.id === item.id)) {
 
-        button.addButton("unequip", (i) => {
+        button.addButton("unequip", () => {
 
           player.equippedWeapons = remove(item as Weapon, player.equippedWeapons);
           player.save();
 
-          i.reply(`Successfully unequipped ${item.name}`);
+          channel.send(`Successfully unequipped ${item.name}`);
         })
 
       } else {
 
-        button.addButton("equip", (i) => {
+        button.addButton("equip", () => {
 
           if (player.equippedWeapons.length >= this.maxWeapon) {
             throw new Error(`you cannot equip more than ${this.maxWeapon} weapon`);
@@ -127,8 +126,7 @@ export default class extends Command {
           player.equippedWeapons.push(item as Weapon);
           player.save();
 
-          i.reply(`Successfully equipped ${item.name}`);
-
+          channel.send(`Successfully equipped ${item.name}`);
         })
       }
 
@@ -136,22 +134,22 @@ export default class extends Command {
 
       if (player.pet?.id === item.id) {
 
-        button.addButton("deactivate", (i) => {
+        button.addButton("deactivate", () => {
 
           player.pet = undefined;
           player.save();
 
-          i.reply(`Successfully deactive ${item.name}`);
+          channel.send(`Successfully deactive ${item.name}`);
         })
 
       } else {
 
-        button.addButton("activate", (i) => {
+        button.addButton("activate", () => {
 
           (item as Pet).setOwner(player);
           player.save();
 
-          i.reply(`Successfully make ${item.name} as active pet`);
+          channel.send(`Successfully make ${item.name} as active pet`);
 
         })
       }
@@ -160,23 +158,22 @@ export default class extends Command {
 
       if (player.skill?.id === item.id) {
 
-        button.addButton("deactivate", (i) => {
+        button.addButton("deactivate", () => {
 
           player.skill = undefined;
           player.save();
 
-          i.reply(`Successfully deactivated ${item.name}`);
+          channel.send(`Successfully deactivated ${item.name}`);
         })
 
       } else {
 
-        button.addButton("activate", (i) => {
+        button.addButton("activate", () => {
 
           player.skill = item as Skill;
           player.save();
 
-          i.reply(`Successfully activated ${item.name}`);
-
+          channel.send(`Successfully activated ${item.name}`);
         })
       }
 

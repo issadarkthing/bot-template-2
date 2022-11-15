@@ -1,39 +1,10 @@
 import { Command } from "@jiman24/slash-commandment";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 import { Battle } from "@jiman24/discordjs-rpg";
 import { Monster } from "../structure/Monster";
 import { bold, currency, getMessage, random } from "../utils";
-import { ButtonMenu } from "../structure/ButtonMenu";
-
-class SearchMonster extends ButtonMenu {
-  player: Player;
-
-  constructor(i: CommandInteraction, embed: MessageEmbed | string, player: Player) {
-    super(i, embed);
-    this.player = player;
-  }
-
-  async search(cb: (monster: Monster) => Promise<void>) {
-
-    const monster = new Monster(this.player);
-    const button = new ButtonMenu(this.i, monster.show())
-
-    button.addButton("next", async (btn) => { 
-      const search = new SearchMonster(this.i, "", this.player);
-      await search.search(cb);
-    })
-
-    button.addButton("battle", async (btn) => { 
-      await btn.reply(`found ${monster.name}`);
-      cb(monster);
-    })
-
-    button.addCloseButton();
-
-    await button.run();
-  }
-}
+import { ButtonHandler } from "@jiman24/discordjs-button";
 
 export default class extends Command {
   name = "hunt";
@@ -48,11 +19,10 @@ export default class extends Command {
     const player = Player.fromUser(i.user);
 
     let monster = new Monster(player);
-    let search = new ButtonMenu(i, monster.show());
+    let search = new ButtonHandler(i, monster.show());
     let isBattle = false;
 
-    search.addButton("battle", async (btn) => {
-      await btn.reply("Battle start");
+    search.addButton("battle", () => {
       isBattle = true;
     })
       
@@ -62,7 +32,8 @@ export default class extends Command {
 
     if (isBattle) {
 
-      const battle = new Battle(msg, random.shuffle([player, monster]));
+      await i.editReply("Battle start");
+      const battle = new Battle(i, random.shuffle([player, monster]));
       battle.interval = process.env.ENV === "DEV" ? 1000 : 3000;
       const winner = await battle.run();
       player.hunt++;

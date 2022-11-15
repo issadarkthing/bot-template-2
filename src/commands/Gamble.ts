@@ -38,9 +38,8 @@ export default class extends Command {
 
   async exec(i: CommandInteraction) {
 
-    const amount = i.options.getInteger("bet")!;
+    const amount = i.options.get("bet")?.value as number;
     const player = Player.fromUser(i.user);
-    const msg = await i.channel!.send("executing");
 
     validateNumber(amount);
     validateAmount(amount, player.coins);
@@ -74,23 +73,24 @@ export default class extends Command {
       }
     }
 
-    const result = rows
+    let result = rows
       .map(x => "**|** " + x.join("") + " **|**")
       .join("\n");
 
-    i.reply(result);
 
     player.coins -= amount;
 
     if (multiplier === 1) {
-      msg.channel.send(`You lost **${amount}** coins!`);
+      result += `\nYou lost **${amount}** coins!`;
 
     } else {
       const winAmount = multiplier * amount;
       player.coins += winAmount;
-      msg.channel.send(`You won **(x${multiplier}) ${winAmount}** coins!`);
+      result += `\nYou won **(x${multiplier}) ${winAmount}** coins!`;
 
     }
+    
+    i.reply(result);
 
     player.save();
   }

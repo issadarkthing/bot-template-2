@@ -1,5 +1,5 @@
 import { Command } from "@jiman24/slash-commandment";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { client } from "../index";
 import { bold, currency } from "../utils";
 
@@ -16,8 +16,8 @@ export default class extends Command {
       .slice(0, 10)
       .join("\n");
 
-    const embed = new MessageEmbed()
-      .setColor("RANDOM")
+    const embed = new EmbedBuilder()
+      .setColor("Random")
       .setTitle("Leaderboard")
       .setDescription(bold(`Name | ${currency}\n`) + player);
 

@@ -36,8 +36,12 @@ export class Monster extends Fighter {
   show() {
     const profile = super.show();
 
-    profile.addField(`${currency} Drop`, code(this.drop), true);
-    profile.addField("xp Drop", code(this.xpDrop), true);
+    profile.addFields(
+      [
+        { name: `${currency} Drop`, value: code(this.drop), inline: true },
+        { name: "xp Drop", value: code(this.xpDrop), inline: true },
+      ]
+    );
 
     return profile;
   }

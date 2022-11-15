@@ -4,7 +4,7 @@ import { Player } from "../structure/Player";
 import { bold, currency, validateAmount, validateNumber } from "../utils";
 import { Battle } from "@jiman24/discordjs-rpg";
 import { ButtonHandler } from "@jiman24/discordjs-button";
-import { oneLine } from "common-tags";
+import { oneLine, stripIndents } from "common-tags";
 
 export default class extends Command {
   name = "duel";
@@ -33,9 +33,10 @@ export default class extends Command {
   }
 
   async exec(i: CommandInteraction) {
+    await i.deferReply();
 
     const player = Player.fromUser(i.user);
-    const amount = i.options.getInteger("bet")!;
+    const amount = i.options.get("bet")?.value! as number;
     const mentionedUser = i.options.getUser("user")!;
 
     validateNumber(amount);
@@ -43,10 +44,8 @@ export default class extends Command {
 
     let accept = false;
 
-    const msg = await i.channel!.send("executing");
-
     const duelConfirmation = new ButtonHandler(
-      msg, 
+      i, 
       oneLine`${player.name} challenge into a duel for ${amount} ${currency}.
       Do you accept? ${mentionedUser}`,
       mentionedUser.id,
@@ -54,8 +53,6 @@ export default class extends Command {
 
     duelConfirmation.addButton("accept", () => { accept = true });
     duelConfirmation.addButton("reject", () => { accept = false });
-
-    await duelConfirmation.run();
 
     await duelConfirmation.run();
 
@@ -70,7 +67,7 @@ export default class extends Command {
     opponent.coins -= amount;
     player.coins -= amount;
 
-    const battle = new Battle(msg, [player, opponent]);
+    const battle = new Battle(i, [player, opponent]);
     const winner = (await battle.run()) as Player;
     const loser = player.id === winner.id ? opponent : player;
 
@@ -79,9 +76,10 @@ export default class extends Command {
     winner.save();
     loser.save();
 
-    i.reply(`${winner.name} wins over ${opponent.name}!`);
-    msg.channel.send(`${winner.name} earns ${bold(amount * 2)} ${currency}`);
-    msg.channel.send(`${loser.name} loses ${bold(amount)} ${currency}`);
-
+    i.editReply(
+      stripIndents`${winner.name} wins over ${opponent.name}!
+        ${winner.name} earns ${bold(amount * 2)} ${currency}
+        ${loser.name} loses ${bold(amount)} ${currency}`
+    );
   }
 }

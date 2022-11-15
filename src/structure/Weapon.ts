@@ -1,5 +1,5 @@
 import { Weapon as BaseWeapon } from "@jiman24/discordjs-rpg";
-import { ButtonInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { Player } from "../structure/Player";
 
 export abstract class Weapon extends BaseWeapon {
@@ -14,7 +14,7 @@ export abstract class Weapon extends BaseWeapon {
     ];
   }
 
-  async buy(i: ButtonInteraction) {
+  async buy(i: CommandInteraction) {
 
     const player = Player.fromUser(i.user);
 
@@ -27,7 +27,7 @@ export abstract class Weapon extends BaseWeapon {
       player.inventory.some(x => x.id === this.id) ||
       player.equippedWeapons.some(x => x.id === this.id)
     ) {
-      await i.reply("You already own this item");
+      await i.channel!.send("You already own this item");
       return;
     }
 
@@ -35,7 +35,7 @@ export abstract class Weapon extends BaseWeapon {
     player.inventory.push(this);
 
     player.save();
-    await i.reply(`Successfully bought **${this.name}**`);
+    await i.channel!.send(`Successfully bought **${this.name}**`);
   }
 }
 
@@ -66,11 +66,4 @@ class Mace extends Weapon {
   name = "Mace";
   attack = 45;
   price = 3500;
-}
-
-class Blaster extends Weapon {
-  id = "blaster";
-  name = "Blaster";
-  attack = 50;
-  price = 4000;
 }

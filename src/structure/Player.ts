@@ -112,22 +112,22 @@ export class Player extends PlayerRPG {
     const profile = super.show();
 
     const armorIndex = 8;
-    const armor = profile.fields.at(armorIndex)!.value;
-    profile.fields.at(armorIndex)!.name = currency;
-    profile.fields.at(armorIndex)!.value = this.coins.toString();
-    profile.fields.at(armorIndex)!.inline = true;
+    const fields = profile.data.fields!;
+    const armor = fields.at(armorIndex)!.value;
+    fields.at(armorIndex)!.name = currency;
+    fields.at(armorIndex)!.value = this.coins.toString();
+    fields.at(armorIndex)!.inline = true;
 
-    profile.addField("Win", code(this.win), true);
-    profile.addField("Hunt", code(this.hunt), true);
+    fields.push({ name: "Win", value: code(this.win), inline: true });
+    fields.push({ name: "Hunt", value: code(this.hunt), inline: true });
 
     const winHuntPercent = (this.win / this.hunt) || 0;
     const winHuntStr = (winHuntPercent * 100).toFixed(2) + "%";
-    profile.addField("Win/Hunt %", code(winHuntStr), true);
 
-    profile.addField("Level", code(this.level), true);
-    profile.addField("xp", `\`${this.xp}/${this.requiredXP()}\``, true);
-
-    profile.addField("Armor", armor);
+    fields.push({ name: "Win/Hunt %", value: code(winHuntStr), inline: true });
+    fields.push({ name: "Level", value: code(this.level), inline: true });
+    fields.push({ name: "xp", value: `\`${this.xp}/${this.requiredXP()}\``, inline: true });
+    fields.push({ name: "Armor", value: armor });
 
     return profile;
   }
@@ -142,10 +142,6 @@ export class Player extends PlayerRPG {
       critDamage,
       ...data
     } = this;
-
-    if (data.pet) {
-      data.pet.owner = undefined;
-    }
 
     client.players.set(this.id, data);
   }

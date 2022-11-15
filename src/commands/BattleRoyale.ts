@@ -1,5 +1,5 @@
 import { Command } from "@jiman24/slash-commandment";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { ButtonHandler } from "@jiman24/discordjs-button";
 import { Player } from "../structure/Player";
 import { Battle } from "@jiman24/discordjs-rpg";
@@ -14,24 +14,24 @@ export default class extends Command {
   fee = 10;
 
   async exec(i: CommandInteraction) {
+    await i.deferReply();
 
     const players = [] as Player[];
 
-    const embed = new MessageEmbed()
-      .setColor("RANDOM")
+    const embed = new EmbedBuilder()
+      .setColor("Random")
       .setTitle("Battle Royale")
       .setDescription(
         oneLine`Battle Royale event has started. Waiting for ${this.maxPlayers}
         players. Battle fee is ${this.fee} ${currency}`
       );
 
-    const msg = await i.channel!.send("Battle");
+    const msg = await i.channel!.send("Starting battle in 1 min...");
 
-    const menu = new ButtonHandler(msg, embed)
+    const menu = new ButtonHandler(i, embed)
       .setMultiUser(this.maxPlayers);
 
-    menu.addButton("join", user => {
-
+    menu.addButton("join", async user => {
       try {
 
         const player = Player.fromUser(user);
@@ -43,7 +43,7 @@ export default class extends Command {
 
         players.push(player);
 
-        msg.channel.send(
+        await msg.edit(
           `${user.username} joined! (${players.length}/${this.maxPlayers} players)`
         );
 
@@ -51,8 +51,6 @@ export default class extends Command {
         const errMsg = (err as Error).message;
         msg.channel.send(`${user} ${errMsg}`);
       }
-
-
     })
 
     await menu.run();
@@ -61,7 +59,7 @@ export default class extends Command {
       throw new Error("cannot start Battle Royale with 1 person or less");
     }
     
-    const battle = new Battle(msg, random.shuffle(players));
+    const battle = new Battle(i, random.shuffle(players));
 
     const winner = (await battle.run()) as Player;
     const reward = this.fee * players.length;
@@ -69,7 +67,7 @@ export default class extends Command {
     winner.coins += reward;
     winner.save();
 
-    msg.channel.send(
+    await msg.edit(
       `${winner.name} has won the Battle Royale and wins ${reward} ${currency}!`
     );
 

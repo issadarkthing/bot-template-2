@@ -1,5 +1,5 @@
 import { Fighter, Skill as BaseSkill } from "@jiman24/discordjs-rpg";
-import { ButtonInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { oneLine } from "common-tags";
 import { formatPercent, code } from "../utils";
 import { Player } from "./Player";
@@ -15,7 +15,7 @@ export abstract class Skill extends BaseSkill {
     ];
   }
 
-  async buy(i: ButtonInteraction) {
+  async buy(i: CommandInteraction) {
 
     const player = Player.fromUser(i.user);
 
@@ -28,7 +28,7 @@ export abstract class Skill extends BaseSkill {
       player.inventory.some(x => x.id === this.id) ||
       player.skill?.id === this.id
     ) {
-      await i.reply("You already own this skill");
+      await i.channel!.send("You already own this skill");
       return;
     }
 
@@ -36,7 +36,7 @@ export abstract class Skill extends BaseSkill {
     player.inventory.push(this);
 
     player.save();
-    await i.reply(`Successfully bought **${this.name}**`);
+    await i.channel!.send(`Successfully bought **${this.name}**`);
   }
 }
 
@@ -50,9 +50,9 @@ export class Rage extends Skill {
 
     p1.attack *= 2;
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setTitle("Skill interception")
-      .setColor("GREEN")
+      .setColor("Green")
       .setDescription(
         oneLine`${p1.name} uses **${this.name} Skill** and increases their
         strength to ${code(p1.attack)}!`
@@ -81,9 +81,9 @@ export class Heal extends Skill {
     const healAmount = Math.ceil(p1.hp * 0.2);
     p1.hp += healAmount;
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setTitle("Skill interception")
-      .setColor("GREEN")
+      .setColor("Green")
       .setDescription(
         oneLine`${p1.name} uses **${this.name} Skill** and heals
         ${code(healAmount)}HP !`
@@ -111,9 +111,9 @@ export class Defense extends Skill {
     const armorAmount = p1.armor * 0.1;
     p1.armor += armorAmount;
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setTitle("Skill interception")
-      .setColor("GREEN")
+      .setColor("Green")
       .setDescription(
         oneLine`${p1.name} uses **${this.name} Skill** and increases
         ${code(formatPercent(armorAmount))}armor !`

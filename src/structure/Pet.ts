@@ -1,5 +1,5 @@
 import { Pet as BasePet } from "@jiman24/discordjs-rpg";
-import { ButtonInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { Player } from "./Player";
 
 export abstract class Pet extends BasePet {
@@ -14,7 +14,7 @@ export abstract class Pet extends BasePet {
     ];
   }
 
-  async buy(i: ButtonInteraction) {
+  async buy(i: CommandInteraction) {
 
     const player = Player.fromUser(i.user);
 
@@ -24,7 +24,7 @@ export abstract class Pet extends BasePet {
     }
 
     if (player.inventory.some(x => x.id === this.id)) {
-      await i.reply("You already own this item");
+      await i.channel!.send("You already own this item");
       return;
     }
 
@@ -32,7 +32,7 @@ export abstract class Pet extends BasePet {
     player.inventory.push(this);
 
     player.save();
-    await i.reply(`Successfully bought **${this.name}**!`);
+    await i.channel!.send(`Successfully bought **${this.name}**!`);
   }
 }
 

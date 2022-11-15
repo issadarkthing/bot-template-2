@@ -1,4 +1,4 @@
-import { ButtonInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { Armor as BaseArmor } from "@jiman24/discordjs-rpg";
 import { Player } from "../structure/Player";
 
@@ -14,7 +14,7 @@ export abstract class Armor extends BaseArmor {
     ];
   }
 
-  async buy(i: ButtonInteraction) {
+  async buy(i: CommandInteraction) {
 
     const player = Player.fromUser(i.user);
 
@@ -27,7 +27,7 @@ export abstract class Armor extends BaseArmor {
       player.inventory.some(x => x.id === this.id) ||
       player.equippedArmors.some(x => x.id === this.id)
     ) {
-      await i.reply("You already own this item");
+      await i.channel!.send("You already own this item");
       return;
     }
 
@@ -35,7 +35,7 @@ export abstract class Armor extends BaseArmor {
     player.inventory.push(this);
 
     player.save();
-    await i.reply(`Successfully bought **${this.name}**`);
+    await i.channel!.send(`Successfully bought **${this.name}**`);
   }
 }
 

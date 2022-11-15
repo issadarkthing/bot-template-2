@@ -18,8 +18,10 @@ export abstract class Boss extends Fighter {
   show() {
     const embed = super.show();
 
-    embed.addField(`${currency} Drop`, `${this.drop}`, true);
-    embed.addField(`XP Drop`, `${this.xpDrop}`, true);
+    embed.addFields([
+      { name: `${currency} Drop`, value: `${this.drop}`, inline: true },
+      { name: `XP Drop`, value: `${this.xpDrop}`, inline: true }
+    ]);
 
     return embed;
   }

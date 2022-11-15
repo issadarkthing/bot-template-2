@@ -1,10 +1,10 @@
 import { 
   CommandInteraction, 
-  Interaction, 
+  MessageComponentInteraction, 
   Message, 
-  MessageActionRow, 
-  MessageEmbed, 
-  MessageSelectMenu,
+  ActionRowBuilder, 
+  EmbedBuilder, 
+  SelectMenuBuilder,
   SelectMenuInteraction,
 } from "discord.js";
 
@@ -12,24 +12,24 @@ type CallBack = (i: SelectMenuInteraction) => void | Promise<void>;
 
 export class SelectMenu {
   private i: CommandInteraction;
-  private embed: MessageEmbed;
+  private embed: EmbedBuilder;
   private userID: string;
   private callBack?: CallBack;
-  selectMenu: MessageSelectMenu;
+  selectMenu: SelectMenuBuilder;
 
-  constructor(i: CommandInteraction, embed: MessageEmbed | string, userID?: string) {
+  constructor(i: CommandInteraction, embed: EmbedBuilder | string, userID?: string) {
     this.i = i;
     this.userID = userID || i.user.id;
-    this.embed = new MessageEmbed();
-    this.selectMenu = new MessageSelectMenu()
+    this.embed = new EmbedBuilder();
+    this.selectMenu = new SelectMenuBuilder()
       .setCustomId("sample")
       .setPlaceholder("Please choose an option");
 
-    if (embed instanceof MessageEmbed) {
-      this.embed = new MessageEmbed(embed);
+    if (embed instanceof EmbedBuilder) {
+      this.embed = new EmbedBuilder(embed.data);
     } else if (typeof embed === "string") {
-      const newEmbed = new MessageEmbed()
-        .setColor("RANDOM")
+      const newEmbed = new EmbedBuilder()
+        .setColor("Random")
         .setDescription(embed);
 
       this.embed = newEmbed;
@@ -42,15 +42,17 @@ export class SelectMenu {
 
   async run() {
 
-    const row = new MessageActionRow()
+    const row = new ActionRowBuilder<SelectMenuBuilder>()
       .addComponents(this.selectMenu);
 
     const msg = await this.i
       .editReply({ embeds: [this.embed], components: [row] }) as Message;
 
     return new Promise<void>((resolve) => {
-        const filter = (i: Interaction) =>
-        i.isSelectMenu() && i.user.id === this.userID;
+        const filter = (x: unknown) => {
+          const i = x as MessageComponentInteraction;
+          return i.isSelectMenu() && i.user.id === this.userID;
+        }
 
         const collector = msg.createMessageComponentCollector({
           filter,
