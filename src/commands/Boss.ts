@@ -30,7 +30,7 @@ export default class extends Command {
   async exec(i: CommandInteraction) {
     await i.deferReply();
 
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
     const boss = Boss.all;
       
     const channel = i.channel!;

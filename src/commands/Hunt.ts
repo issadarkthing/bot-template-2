@@ -16,7 +16,7 @@ export default class extends Command {
     await i.reply("Hunting..");
 
     const msg = await getMessage(i);
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
 
     let monster = new Monster(player);
     let search = new ButtonHandler(i, monster.show());

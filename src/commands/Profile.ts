@@ -8,7 +8,7 @@ export default class extends Command {
   aliases = ["p"];
 
   async exec(i: CommandInteraction) {
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
     i.reply({ embeds: [player.show()] });
   }
 }

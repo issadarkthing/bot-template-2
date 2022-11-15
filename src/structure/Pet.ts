@@ -16,7 +16,7 @@ export abstract class Pet extends BasePet {
 
   async buy(i: CommandInteraction) {
 
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
 
     if (player.coins < this.price) {
       await i.reply("Insufficient amount");

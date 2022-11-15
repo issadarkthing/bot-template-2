@@ -35,7 +35,7 @@ export default class extends Command {
   async exec(i: CommandInteraction) {
     await i.deferReply();
 
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
     const amount = i.options.get("bet")?.value! as number;
     const mentionedUser = i.options.getUser("user")!;
 
@@ -60,7 +60,7 @@ export default class extends Command {
       throw new Error(`${mentionedUser.username} rejected the duel challenge`);
     }
 
-    const opponent = Player.fromUser(mentionedUser);
+    const opponent = await Player.fromUser(mentionedUser);
 
     validateAmount(amount, opponent.coins);
 

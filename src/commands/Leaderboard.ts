@@ -1,6 +1,7 @@
 import { Command } from "@jiman24/slash-commandment";
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { client } from "../index";
+import { Player } from "../structure/Player";
 import { bold, currency } from "../utils";
 
 export default class extends Command {
@@ -10,7 +11,7 @@ export default class extends Command {
 
   async exec(i: CommandInteraction) {
 
-    const player = client.players.array()
+    const player = [...(await client.players.values) as Player[]]
       .sort((a, b) => b.coins - a.coins)
       .map((x, i) => `${i + 1}. ${x.name} \`${x.coins}\``)
       .slice(0, 10)

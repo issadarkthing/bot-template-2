@@ -7,6 +7,7 @@ import { Armor } from "./Armor";
 import { Weapon } from "./Weapon";
 import { Pet } from "./Pet";
 import { Skill } from "./Skill";
+import { CommandError } from "@jiman24/slash-commandment";
 
 export const AVATARS = [
   "https://cdn.discordapp.com/attachments/917581398313947166/917590572422799390/screenshot-07-12-2021093515.png",
@@ -18,6 +19,7 @@ export const AVATARS = [
   "https://cdn.discordapp.com/attachments/917581398313947166/917590570082402324/screenshot-07-12-2021093631.png",
   "https://cdn.discordapp.com/attachments/917581398313947166/917590569595854908/screenshot-07-12-2021093639.png",
 ];
+
 
 export class Player extends PlayerRPG {
   name: string;
@@ -34,12 +36,12 @@ export class Player extends PlayerRPG {
     this.imageUrl = imageUrl;
   }
 
-  static fromUser(user: User) {
+  static async fromUser(user: User) {
 
-    const data = client.players.get(user.id);
+    const data = await client.players.get(user.id) as any;
 
     if (!data) {
-      throw new PlayerNotFoundErr("character has not been created");
+      throw new CommandError("You have not created your character. Please use `/create`");
     }
 
     const player = new Player(user, data.imageUrl);
@@ -132,7 +134,7 @@ export class Player extends PlayerRPG {
     return profile;
   }
 
-  save() {
+  async save() {
     const { 
       user, 
       attack,
@@ -143,7 +145,7 @@ export class Player extends PlayerRPG {
       ...data
     } = this;
 
-    client.players.set(this.id, data);
+    await client.players.set(this.id, data);
   }
 }
 

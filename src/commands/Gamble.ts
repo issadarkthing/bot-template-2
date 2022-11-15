@@ -39,7 +39,7 @@ export default class extends Command {
   async exec(i: CommandInteraction) {
 
     const amount = i.options.get("bet")?.value as number;
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
 
     validateNumber(amount);
     validateAmount(amount, player.coins);

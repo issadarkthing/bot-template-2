@@ -34,7 +34,7 @@ export default class extends Command {
     menu.addButton("join", async user => {
       try {
 
-        const player = Player.fromUser(user);
+        const player = await Player.fromUser(user);
 
         validateAmount(this.fee, player.coins);
 

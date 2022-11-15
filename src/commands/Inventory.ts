@@ -20,8 +20,7 @@ export default class extends Command {
 
   async exec(i: CommandInteraction) {
 
-
-    const player = Player.fromUser(i.user);
+    const player = await Player.fromUser(i.user);
     const inventoryList = toNList(
       player.inventory.map(item => {
         // show equipped item in the list with symbol so it is easier to

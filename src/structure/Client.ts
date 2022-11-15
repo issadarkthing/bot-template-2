@@ -1,6 +1,11 @@
 import { Client as DiscordClient } from "discord.js";
-import Enmap from "enmap";
+import Josh from "@joshdb/core";
+//@ts-ignore
+import provider from "@joshdb/sqlite";
 
 export class Client extends DiscordClient {
-  players = new Enmap("Player");
+  players = new Josh({
+    name: "players",
+    provider,
+  })
 }

@@ -10,7 +10,7 @@ export default class extends Command {
 
   async exec(i: CommandInteraction) {
 
-    if (client.players.has(i.user.id)) {
+    if (await client.players.has(i.user.id)) {
       throw new Error("your character has already been created");
     }
 
