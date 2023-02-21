@@ -16,6 +16,7 @@ export const client = new Client({
 export const commandManager = new CommandManager({
   client,
   devGuildID: "899466085735223337",
+  isDev: process.env.ENV === "DEV",
 });
 
 commandManager.verbose = true;
