@@ -1,8 +1,9 @@
 #!/bin/bash
 
+REPO=https://github.com/issadarkthing/bot-template-2.git
 
-sudo apt update
-sudo apt install git build-essential
+sudo apt -y update
+sudo apt -y install git build-essential
 
 git clone $REPO
 
